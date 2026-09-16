@@ -65,10 +65,17 @@ export default function LiveFeed({
               {live.running ? <i className="pulse" /> : null}
               {fmtClock(live.minute)} · {dayLabel}
             </span>
-            <button type="button" className="chip btn" onClick={onToggle}>
-              {live.running ? 'Pause' : 'Start feed'}
+            <button
+              type="button"
+              className={`live-btn ${live.running ? 'is-secondary' : ''}`}
+              onClick={onToggle}
+              aria-pressed={live.running}
+            >
+              {live.running ? '❚❚  Pause' : '▶  Start feed'}
             </button>
-            <button type="button" className="chip btn" onClick={onReset}>Reset</button>
+            <button type="button" className="live-btn is-secondary" onClick={onReset}>
+              Reset
+            </button>
           </div>
         }
       />
@@ -134,9 +141,13 @@ export default function LiveFeed({
 
         <div className="feed">
           {live.feed.length === 0 ? (
-            <div className="feed-empty">
-              Feed idle. Press <strong>Start feed</strong> to open the trading day.
-            </div>
+            <button type="button" className="feed-empty" onClick={onToggle}>
+              <span className="play" aria-hidden="true">▶</span>
+              <span className="lead">Start the trading day</span>
+              <span className="sub">
+                Transactions begin arriving at 08:00 and run through to 22:00 in about ninety seconds.
+              </span>
+            </button>
           ) : (
             live.feed.map((t) => (
               <div className="feed-row" key={t.id}>
