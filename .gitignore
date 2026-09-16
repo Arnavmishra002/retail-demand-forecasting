@@ -1,0 +1,10 @@
+node_modules/
+dist/
+.vite/
+.netlify/
+.DS_Store
+*.log
+.venv/
+__pycache__/
+*.pyc
+pipeline/out/
