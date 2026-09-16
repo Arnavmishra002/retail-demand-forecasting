@@ -36,7 +36,7 @@ export function Legend({ items }: { items: { color: string; label: string }[] })
 export function CardHead({ title, hint, right }: { title: string; hint?: string; right?: ReactNode }) {
   return (
     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 12 }}>
-      <div>
+      <div style={{ minWidth: 0 }}>
         <h2>{title}</h2>
         {hint ? <p className="hint">{hint}</p> : null}
       </div>

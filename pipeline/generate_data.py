@@ -23,22 +23,27 @@ STORES = [
 ]
 
 # sku, name, category, base_price, unit_cost, base_rate, elasticity, season_phase
+#
+# base_rate is deliberately skewed: a handful of hero lines carry most of the
+# revenue and the tail moves a couple of units a day. That is what real assortments
+# look like, and it is what makes the ABC split and the slow-mover forecasting
+# problem on the dashboard meaningful rather than decorative.
 SKUS = [
-    ("K101", "Cold Brew Concentrate", "Beverages", 8.50, 4.10, 42, -1.8, 0.58),
-    ("K102", "Sparkling Water 12pk", "Beverages", 6.25, 3.05, 61, -2.1, 0.55),
-    ("K103", "Oat Milk 1L", "Beverages", 4.40, 2.35, 55, -1.5, 0.12),
-    ("K201", "Protein Bar Variety", "Snacks", 12.90, 6.40, 38, -1.3, 0.05),
-    ("K202", "Kettle Chips 200g", "Snacks", 3.75, 1.60, 74, -1.9, 0.48),
-    ("K203", "Trail Mix 500g", "Snacks", 9.10, 4.55, 29, -1.1, 0.72),
-    ("K301", "Laundry Pods 40ct", "Household", 18.50, 10.20, 21, -0.9, 0.30),
-    ("K302", "Paper Towels 6pk", "Household", 14.25, 8.10, 26, -1.0, 0.18),
-    ("K303", "Dish Soap 750ml", "Household", 5.60, 2.70, 33, -1.2, 0.25),
-    ("K401", "Sunscreen SPF50", "Seasonal", 16.80, 7.35, 14, -1.6, 0.52),
-    ("K402", "Insulated Bottle 750ml", "Seasonal", 27.40, 12.60, 9, -1.4, 0.46),
-    ("K403", "Fleece Throw Blanket", "Seasonal", 31.00, 14.80, 7, -1.7, 0.96),
-    ("K501", "AA Batteries 8pk", "Electronics", 11.40, 5.20, 18, -1.0, 0.88),
-    ("K502", "USB-C Cable 2m", "Electronics", 13.60, 4.90, 16, -1.5, 0.08),
-    ("K503", "Wireless Earbuds", "Electronics", 59.00, 28.50, 5, -1.9, 0.90),
+    ("K101", "Cold Brew Concentrate", "Beverages", 8.50, 4.10, 88.0, -1.8, 0.58),
+    ("K102", "Sparkling Water 12pk", "Beverages", 6.25, 3.05, 150.0, -2.1, 0.55),
+    ("K103", "Oat Milk 1L", "Beverages", 4.40, 2.35, 52.0, -1.5, 0.12),
+    ("K201", "Protein Bar Variety", "Snacks", 12.90, 6.40, 95.0, -1.3, 0.05),
+    ("K202", "Kettle Chips 200g", "Snacks", 3.75, 1.60, 160.0, -1.9, 0.48),
+    ("K203", "Trail Mix 500g", "Snacks", 9.10, 4.55, 14.0, -1.1, 0.72),
+    ("K301", "Laundry Pods 40ct", "Household", 18.50, 10.20, 26.0, -0.9, 0.30),
+    ("K302", "Paper Towels 6pk", "Household", 14.25, 8.10, 21.0, -1.0, 0.18),
+    ("K303", "Dish Soap 750ml", "Household", 5.60, 2.70, 8.5, -1.2, 0.25),
+    ("K401", "Sunscreen SPF50", "Seasonal", 16.80, 7.35, 5.5, -1.6, 0.52),
+    ("K402", "Insulated Bottle 750ml", "Seasonal", 27.40, 12.60, 6.2, -1.4, 0.46),
+    ("K403", "Fleece Throw Blanket", "Seasonal", 31.00, 14.80, 1.1, -1.7, 0.96),
+    ("K501", "AA Batteries 8pk", "Electronics", 11.40, 5.20, 2.0, -1.0, 0.88),
+    ("K502", "USB-C Cable 2m", "Electronics", 13.60, 4.90, 5.0, -1.5, 0.08),
+    ("K503", "Wireless Earbuds", "Electronics", 59.00, 28.50, 6.5, -1.9, 0.90),
 ]
 
 HOLIDAYS = {

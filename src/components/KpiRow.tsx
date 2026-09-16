@@ -1,3 +1,5 @@
+import type { ReactNode } from 'react'
+
 import { fmtInt, fmtMoney, fmtPct } from '../lib/format'
 import type { NetworkRollup } from '../lib/inventory'
 
@@ -13,7 +15,7 @@ interface Props {
 interface Kpi {
   label: string
   value: string
-  delta: React.ReactNode
+  delta: ReactNode
   tone?: 'teal' | 'amber' | 'red' | 'violet'
 }
 

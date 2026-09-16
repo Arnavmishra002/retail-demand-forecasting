@@ -1,3 +1,5 @@
+import type { WheelEvent } from 'react'
+
 import { fmtMoney2, fmtPct } from '../lib/format'
 import type { StoreMeta } from '../lib/types'
 
@@ -9,6 +11,10 @@ export interface FilterState {
   horizonDays: number
   stockoutPenalty: number
 }
+
+/** Chrome lets the wheel change a focused range input; on a page this long that
+ *  turns an ordinary scroll into a silent policy change. */
+const blockWheel = (e: WheelEvent<HTMLInputElement>) => e.currentTarget.blur()
 
 interface Props {
   state: FilterState
@@ -89,6 +95,7 @@ export default function Controls({ state, stores, categories, horizons, onChange
             max={0.995}
             step={0.005}
             value={state.serviceLevel}
+            onWheel={blockWheel}
             onChange={(e) => onChange({ serviceLevel: Number(e.target.value) })}
           />
         </div>
@@ -105,6 +112,7 @@ export default function Controls({ state, stores, categories, horizons, onChange
             max={40}
             step={0.5}
             value={state.stockoutPenalty}
+            onWheel={blockWheel}
             onChange={(e) => onChange({ stockoutPenalty: Number(e.target.value) })}
           />
         </div>
