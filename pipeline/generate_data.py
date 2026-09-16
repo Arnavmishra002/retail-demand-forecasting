@@ -54,10 +54,16 @@ def holiday_factor(ts: pd.Timestamp) -> float:
     return HOLIDAYS.get(ts.strftime("%m-%d"), 1.0)
 
 
-def build_panel(start: str = "2023-09-18", days: int = 735) -> pd.DataFrame:
-    """Return a tidy daily panel of ``date, store, sku, units, price, promo, ...``."""
+def build_panel(days: int = 735, end: pd.Timestamp | None = None) -> pd.DataFrame:
+    """Return a tidy daily panel of ``date, store, sku, units, price, promo, ...``.
+
+    History ends yesterday by default so the dashboard always opens on a "today"
+    that matches the wall clock. The seed is fixed, so the *shape* of the series
+    is reproducible even though the calendar window slides.
+    """
     rng = np.random.default_rng(RNG_SEED)
-    dates = pd.date_range(start, periods=days, freq="D")
+    end = end if end is not None else pd.Timestamp.today().normalize() - pd.Timedelta(days=1)
+    dates = pd.date_range(end=end, periods=days, freq="D")
     doy = dates.dayofyear.to_numpy()
     dow = dates.dayofweek.to_numpy()
     t = np.arange(days) / 365.0

@@ -87,7 +87,11 @@ export interface Policy {
   fillRate: number
   expectedShortUnits: number      // per replenishment cycle
   cyclesPerYear: number
-  holdingCost: number             // $/yr
+  /** holding cost of the cycle stock Q/2 -- independent of the service level */
+  cycleHoldingCost: number        // $/yr
+  /** holding cost of the safety stock -- this is what the service level buys */
+  safetyHoldingCost: number       // $/yr
+  holdingCost: number             // $/yr, cycle + safety
   orderingCost: number            // $/yr
   shortageCost: number            // $/yr
   totalCost: number               // $/yr
@@ -121,7 +125,9 @@ export function buildPolicy(s: Series, input: PolicyInput): Policy {
   const cyclesPerYear = annualDemand / orderQty
   const fillRate = clamp(1 - expectedShortUnits / orderQty, 0, 1)
 
-  const holdingCost = (safetyStock + orderQty / 2) * holdingPerUnit
+  const cycleHoldingCost = (orderQty / 2) * holdingPerUnit
+  const safetyHoldingCost = safetyStock * holdingPerUnit
+  const holdingCost = cycleHoldingCost + safetyHoldingCost
   const orderingCost = cyclesPerYear * s.orderCost
   const shortageCost = expectedShortUnits * cyclesPerYear * input.stockoutPenalty
   const totalCost = holdingCost + orderingCost + shortageCost
@@ -143,7 +149,8 @@ export function buildPolicy(s: Series, input: PolicyInput): Policy {
   return {
     series: s, muDaily, sigmaDaily, protection, safetyStock, reorderPoint,
     orderUpTo, eoq, orderQty, annualDemand, fillRate, expectedShortUnits,
-    cyclesPerYear, holdingCost, orderingCost, shortageCost, totalCost,
+    cyclesPerYear, cycleHoldingCost, safetyHoldingCost, holdingCost,
+    orderingCost, shortageCost, totalCost,
     inventoryValue, daysOfCover, netPosition, action,
     suggestedOrder: action === 'ok' || action === 'overstock' ? 0 : suggestedOrder,
   }
@@ -158,6 +165,8 @@ export interface NetworkRollup {
   workingCapital: number
   totalCost: number
   holdingCost: number
+  cycleHoldingCost: number
+  safetyHoldingCost: number
   orderingCost: number
   shortageCost: number
   reorderLines: number
@@ -170,6 +179,7 @@ export function rollup(policies: Policy[], horizonDays: number): NetworkRollup {
   let horizonUnits = 0, horizonRevenue = 0, demandW = 0, fillW = 0
   let safetyStockValue = 0, workingCapital = 0
   let holdingCost = 0, orderingCost = 0, shortageCost = 0, openOrderValue = 0
+  let cycleHoldingCost = 0, safetyHoldingCost = 0
   let reorderLines = 0, expediteLines = 0, overstockLines = 0
 
   for (const p of policies) {
@@ -182,6 +192,8 @@ export function rollup(policies: Policy[], horizonDays: number): NetworkRollup {
     safetyStockValue += p.safetyStock * p.series.unitCost
     workingCapital += p.inventoryValue
     holdingCost += p.holdingCost
+    cycleHoldingCost += p.cycleHoldingCost
+    safetyHoldingCost += p.safetyHoldingCost
     orderingCost += p.orderingCost
     shortageCost += p.shortageCost
     openOrderValue += p.suggestedOrder * p.series.unitCost
@@ -195,7 +207,7 @@ export function rollup(policies: Policy[], horizonDays: number): NetworkRollup {
     fillRate: demandW > 0 ? fillW / demandW : 0,
     safetyStockValue, workingCapital,
     totalCost: holdingCost + orderingCost + shortageCost,
-    holdingCost, orderingCost, shortageCost,
+    holdingCost, cycleHoldingCost, safetyHoldingCost, orderingCost, shortageCost,
     reorderLines, expediteLines, overstockLines, openOrderValue,
   }
 }
@@ -203,13 +215,22 @@ export function rollup(policies: Policy[], horizonDays: number): NetworkRollup {
 /** Cost of the whole network as a function of service level -- the trade-off curve. */
 export function serviceLevelCurve(
   seriesList: Series[], input: PolicyInput, levels: number[],
-): { level: number; holding: number; shortage: number; ordering: number; total: number; fillRate: number }[] {
+): {
+  level: number
+  cycleHolding: number
+  safetyHolding: number
+  shortage: number
+  ordering: number
+  total: number
+  fillRate: number
+}[] {
   return levels.map((level) => {
     const r = rollup(seriesList.map((s) => buildPolicy(s, { ...input, serviceLevel: level })),
                      input.horizonDays)
     return {
       level,
-      holding: r.holdingCost,
+      cycleHolding: r.cycleHoldingCost,
+      safetyHolding: r.safetyHoldingCost,
       shortage: r.shortageCost,
       ordering: r.orderingCost,
       total: r.totalCost,

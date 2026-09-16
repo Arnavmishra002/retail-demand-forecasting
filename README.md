@@ -15,7 +15,7 @@ the browser from an explicit formula — nothing is a static mock-up.
 
 **Forecasting (offline, Python)**
 
-* Builds a 6-store × 15-SKU daily demand panel (735 days, 66k rows) with weekly
+* Builds a 6-store × 15-SKU daily demand panel (735 days ending yesterday, 66k rows) with weekly
   and annual seasonality, price elasticity, promotion lifts, holiday effects and
   negative-binomial overdispersion.
 * Fits a ridge regression per store × SKU on features that are *known in
@@ -33,9 +33,12 @@ Current result, demand-weighted across all 90 series:
 
 | Metric | Model | Seasonal naive |
 | --- | --- | --- |
-| WAPE | **0.309** | 0.399 |
+| WAPE | **≈0.31** | ≈0.40 |
 
-— a 22.6% error reduction over the benchmark.
+— roughly a 25% error reduction over the benchmark. The exact figures move by a
+few tenths of a point between runs because the panel window is anchored to
+yesterday, so the calendar slides even though the random seed does not; the
+dashboard header always shows the run's own numbers.
 
 **Inventory optimization (live, TypeScript)**
 

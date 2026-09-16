@@ -7,7 +7,8 @@ import { CardHead, Legend, TooltipCard } from './ChartBits'
 
 export interface CurvePoint {
   level: number
-  holding: number
+  cycleHolding: number
+  safetyHolding: number
   shortage: number
   ordering: number
   total: number
@@ -28,8 +29,9 @@ function Tip({ active, payload }: any) {
       title={`${fmtPct(p.level, 1)} cycle service`}
       rows={[
         { label: 'Total cost', value: fmtMoney(p.total), color: 'var(--text)' },
-        { label: 'Holding', value: fmtMoney(p.holding), color: 'var(--violet)' },
+        { label: 'Safety stock holding', value: fmtMoney(p.safetyHolding), color: 'var(--violet)' },
         { label: 'Shortage', value: fmtMoney(p.shortage), color: 'var(--red)' },
+        { label: 'Cycle stock holding', value: fmtMoney(p.cycleHolding), color: 'var(--text-muted)' },
         { label: 'Ordering', value: fmtMoney(p.ordering), color: 'var(--text-muted)' },
         { label: 'Fill rate', value: fmtPct(p.fillRate, 2), color: 'var(--teal)' },
       ]}
@@ -45,10 +47,11 @@ export default function ServiceCurve({ curve, current, optimum }: Props) {
     <div className="card">
       <CardHead
         title="Service level vs annual cost"
-        hint="Holding cost climbs with safety stock; shortage cost falls. The minimum of the sum is the economically correct service level — not 99%."
+        hint="Safety-stock holding climbs with the service level; expected shortage cost falls. Cycle stock and ordering cost are fixed by EOQ and do not move — the trade-off lives in the two bands above them."
         right={<Legend items={[
-          { color: 'var(--violet)', label: 'Holding' },
+          { color: 'var(--violet)', label: 'Safety stock' },
           { color: 'var(--red)', label: 'Shortage' },
+          { color: 'var(--text-faint)', label: 'Cycle + ordering' },
           { color: 'var(--text)', label: 'Total' },
         ]} />}
       />
@@ -64,9 +67,10 @@ export default function ServiceCurve({ curve, current, optimum }: Props) {
           />
           <YAxis tickFormatter={fmtCompactMoney} width={56} tickLine={false} axisLine={false} />
           <Tooltip content={<Tip />} />
-          <Area dataKey="holding" stackId="c" stroke="none" fill="var(--violet)" fillOpacity={0.25} isAnimationActive={false} />
-          <Area dataKey="shortage" stackId="c" stroke="none" fill="var(--red)" fillOpacity={0.25} isAnimationActive={false} />
-          <Area dataKey="ordering" stackId="c" stroke="none" fill="var(--text-faint)" fillOpacity={0.18} isAnimationActive={false} />
+          <Area dataKey="cycleHolding" stackId="c" stroke="none" fill="var(--text-faint)" fillOpacity={0.16} isAnimationActive={false} />
+          <Area dataKey="ordering" stackId="c" stroke="none" fill="var(--text-faint)" fillOpacity={0.16} isAnimationActive={false} />
+          <Area dataKey="safetyHolding" stackId="c" stroke="none" fill="var(--violet)" fillOpacity={0.4} isAnimationActive={false} />
+          <Area dataKey="shortage" stackId="c" stroke="none" fill="var(--red)" fillOpacity={0.35} isAnimationActive={false} />
           <Line dataKey="total" stroke="var(--text)" strokeWidth={2.2} dot={false} isAnimationActive={false} />
           {optimum ? (
             <ReferenceDot x={optimum.level} y={optimum.total} r={5}
