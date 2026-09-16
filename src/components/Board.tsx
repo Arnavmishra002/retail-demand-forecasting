@@ -7,7 +7,10 @@ import Controls, { type FilterState } from './Controls'
 import DemandChart, { type DemandPoint } from './DemandChart'
 import InventoryTable from './InventoryTable'
 import KpiRow from './KpiRow'
+import LiveFeed from './LiveFeed'
 import ServiceCurve from './ServiceCurve'
+
+import { useLiveSim } from '../hooks/useLiveSim'
 
 import { abcClassify, buildPolicy, rollup, serviceLevelCurve } from '../lib/inventory'
 import { fmtInt } from '../lib/format'
@@ -33,12 +36,29 @@ export default function Board({ data }: { data: Dashboard }) {
   )
   const abc = useMemo(() => abcClassify(data.series), [data])
 
-  const scoped = useMemo(() => data.series.filter((s) => {
+  // The feed always runs the whole network; filters change what is displayed,
+  // not what is selling.
+  const { state: live, toggle: toggleLive, reset: resetLive } = useLiveSim(data.series)
+
+  const inScope = useMemo(() => data.series.filter((s) => {
     if (state.store !== 'all' && s.store !== state.store) return false
     if (state.category !== 'all' && skuMap.get(s.sku)?.category !== state.category) return false
     if (state.abc !== 'all' && abc.get(s.sku) !== state.abc) return false
     return true
   }), [data, state.store, state.category, state.abc, skuMap, abc])
+
+  // Live sales draw down on-hand, so every policy below reacts as the day runs.
+  const scoped = useMemo(() => {
+    if (live.soldToday.size === 0) return inScope
+    return inScope.map((s) => {
+      const sold = live.soldToday.get(`${s.store}|${s.sku}`) ?? 0
+      return sold > 0 ? { ...s, onHand: Math.max(0, s.onHand - sold) } : s
+    })
+  }, [inScope, live.soldToday])
+
+  const forecastToday = useMemo(
+    () => inScope.reduce((a, s) => a + s.fc[0], 0), [inScope],
+  )
 
   const policyInput = useMemo(() => ({
     serviceLevel: state.serviceLevel,
@@ -177,6 +197,17 @@ export default function Board({ data }: { data: Dashboard }) {
           wape={data.accuracy.wape}
           wapeNaive={data.accuracy.wapeNaive}
           baselineCost={baselineCost}
+        />
+      </div>
+
+      <div className="section">
+        <LiveFeed
+          live={live}
+          onToggle={toggleLive}
+          onReset={resetLive}
+          forecastToday={forecastToday}
+          skuMap={skuMap}
+          storeMap={storeMap}
         />
       </div>
 

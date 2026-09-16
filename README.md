@@ -60,8 +60,23 @@ up wrong. Fill rate comes from the unit normal loss function `G(z)` rather than
 being assumed equal to the cycle service level; the gap between those two is
 exactly where over-stocking hides.
 
+**Live point-of-sale feed (in-browser simulation)**
+
+A **Start feed** control opens a simulated trading day. Transactions arrive as an
+inhomogeneous Poisson process: each store × SKU takes its arrival rate from day 1
+of its own forecast, spread across trading hours by a shared intraday curve, so
+the tick-level stream aggregates back to the daily forecast in expectation — the
+live view and the plan are the same model, not two unrelated mocks.
+
+Each sale decrements on-hand, so the whole board reacts while you watch: pace
+against plan, lines crossing their reorder point, and the exception queue
+re-ranking itself. A 14-hour day runs in about 90 seconds and then rolls into
+the next one, carrying stock positions forward.
+
 **What the dashboard shows**
 
+* Live feed: cumulative sales today against the expected intraday curve, with a
+  running pace-vs-plan figure and a transaction ticker.
 * Network demand: 120 days of actuals and a 28-day forecast with an 80% band,
   aggregated by adding *variances* across independent series, not interval widths.
 * Service level vs annual cost: holding, shortage and ordering cost decomposed
@@ -114,6 +129,8 @@ pipeline/
   run_pipeline.py    orchestration -> public/dashboard.json
 src/
   lib/inventory.ts   normInv, unit normal loss, (s,Q) policy, rollups, ABC
+  lib/live.ts        intraday curve, Poisson arrivals, transaction generator
+  hooks/useLiveSim   the simulation clock and accumulated day state
   lib/types.ts       payload contract shared with the pipeline
   components/        dashboard panels (Recharts)
 ```
